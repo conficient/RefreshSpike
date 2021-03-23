@@ -1,5 +1,5 @@
 ﻿@page "/fetchdata"
-
+@implements IDisposable
 @using RefreshSpike.Data
 @inject WeatherForecastService ForecastService
 
@@ -25,7 +25,7 @@ else
         <tbody>
             @foreach (var forecast in forecasts)
             {
-                <tr>
+                <tr class="@GetCSS(forecast)">
                     <td>@forecast.Date.ToShortDateString()</td>
                     <td>@forecast.TemperatureC</td>
                     <td>@forecast.TemperatureF</td>
@@ -41,6 +41,58 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+        // load initial forecasts
+        forecasts = await ForecastService.GetForecastAsync();
+        // subscribe to events
+        ForecastService.OnForecastChanged += HandleChange;
+    }
+
+    // set to date of last modified
+    DateTime? lastUpdated;
+
+    /// <summary>
+    /// Show last updated with different colour to make it easier to see
+    /// </summary>
+    /// <param name="forecast"></param>
+    /// <returns></returns>
+    string GetCSS(WeatherForecast forecast)
+    {
+        if (lastUpdated.HasValue && lastUpdated.Value == forecast.Date)
+            return "table-success"; // Boostrap4 green background
+        return null;
+    }
+
+    /// <summary>
+    /// Handle a 
+    /// </summary>
+    /// <param name="forecast"></param>
+    private void HandleChange(WeatherForecast forecast)
+    {
+        // find match and replace it
+        var index = GetIndexOfDate(forecast.Date);
+        if (index > 0)
+        {
+            // make CSS show which got updated
+            lastUpdated = forecast.Date;
+            forecasts[index] = forecast;
+            // notify Blazor to redraw
+            // need to use InvokeAsync as the thread may be different
+            InvokeAsync(StateHasChanged);
+        }
+    }
+
+    int GetIndexOfDate(DateTime date)
+    {
+        for (int i = 0; i < forecasts.Length; i++)
+        {
+            if (forecasts[i].Date == date) return i;
+        }
+        return -1;
+    }
+
+    void IDisposable.Dispose()
+    {
+        // stop listening
+        ForecastService.OnForecastChanged -= HandleChange;
     }
 }

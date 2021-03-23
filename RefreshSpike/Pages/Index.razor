@@ -1,7 +1,12 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+<h1>Refresh Spike!</h1>
 
-Welcome to your new app.
+<p>This is a quick spike app to show how a service can link with a Blazor component and update
+    the UI without polling users timers on the client page.</p>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+<p>In this example the weather service is set to update a random entry every five seconds - 
+    we use a timer to initiate the change as a convenience but the source could be a database trigger 
+    or some other.</p>
+
+<p>This example in response to a <a href="https://www.reddit.com/r/Blazor/comments/lvl0qd/refreshing_data_with_a_timer/">Reddit Question</a>.</p>
